@@ -25,18 +25,16 @@ body { margin: 0; padding: 0; }
 <div id="map"></div>
 
 <div id="menu">
-    <input id="streets-v12" type="radio" name="rtoggle" value="satellite" checked="checked">
-    <!-- See a list of Mapbox-hosted public styles at -->
-    <!-- https://docs.mapbox.com/api/maps/styles/#mapbox-styles -->
-    <label for="streets-v12">streets</label>
-    <input id="light-v11" type="radio" name="rtoggle" value="light">
-    <label for="light-v11">light</label>
-    <input id="dark-v11" type="radio" name="rtoggle" value="dark">
-    <label for="dark-v11">dark</label>
-    <input id="satellite-streets-v12" type="radio" name="rtoggle" value="streets">
-    <label for="satellite-streets-v12">sat</label>
-    <input id="outdoors-v12" type="radio" name="rtoggle" value="outdoors">
-    <label for="outdoors-v12">outdoors</label>
+    <input id="mapbox/streets-v12" type="radio" name="rtoggle" value="satellite" checked="checked">
+    <label for="mapbox/streets-v12">streets</label>
+    <input id="garygibbons/cld4upb29001f01o8l2l865e7" type="radio" name="rtoggle" value="light">
+    <label for="garygibbons/cld4upb29001f01o8l2l865e7">light</label>
+    <input id="mapbox/dark-v11" type="radio" name="rtoggle" value="dark">
+    <label for="mapbox/dark-v11">dark</label>
+    <input id="mapbox/satellite-streets-v12" type="radio" name="rtoggle" value="streets">
+    <label for="mapbox/satellite-streets-v12">sat</label>
+    <input id="mapbox/outdoors-v12" type="radio" name="rtoggle" value="outdoors">
+    <label for="mapbox/outdoors-v12">outdoors</label>
 </div>
 <script>
 
@@ -54,7 +52,7 @@ body { margin: 0; padding: 0; }
     for (const input of inputs) {
         input.onclick = (layer) => {
             const layerId = layer.target.id;
-            map.setStyle('mapbox://styles/mapbox/' + layerId);
+            map.setStyle('mapbox://styles/' + layerId);
         };
     }
 
@@ -79,7 +77,7 @@ body { margin: 0; padding: 0; }
         'layout': {},
         'paint': {
           
-          'fill-outline-color': '#999',
+          'fill-outline-color': '#f90',
           'fill-color': 'transparent',
           'fill-opacity': [
             "interpolate", ["linear"], ["get", "density"],
