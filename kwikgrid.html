@@ -1,30 +1,49 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<meta charset="utf-8">
-<title>Approx hexes of 4 square km</title>
-<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
-<link href="https://api.mapbox.com/mapbox-gl-js/v2.12.0/mapbox-gl.css" rel="stylesheet">
-<script src="https://api.mapbox.com/mapbox-gl-js/v2.12.0/mapbox-gl.js"></script>
-<script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
-<style>
-body { margin: 0; padding: 0; }
-#map { position: absolute; top: 0; bottom: 0; width: 100%; }
-</style>
-</head>
-<body>
-<style>
-    #menu {
-        position: absolute;
-        background: #efefef;
-        padding: 10px;
-        font-family: 'Open Sans', sans-serif;
+  <meta charset="utf-8">
+  <title>Approx hexes of 4 square km</title>
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.12.0/mapbox-gl.css" rel="stylesheet">
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.12.0/mapbox-gl.js"></script>
+  <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
     }
-</style>
 
-<div id="map"></div>
+    #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+    }
+  </style>
+</head>
 
-<div id="menu">
+<body>
+  <style>
+    #menu {
+      position: absolute;
+      background: #efefef;
+      padding: 10px;
+      font-family: 'Open Sans', sans-serif;
+    }
+
+    #about{
+      position: absolute;
+      background: #efefef;
+      padding: 10px;
+      right: 0px;
+      font-family: 'Open Sans', sans-serif;
+    }
+  </style>
+
+  <div id="map"></div>
+
+  <div id="menu">
     <input id="mapbox/streets-v12" type="radio" name="rtoggle" value="satellite" checked="checked">
     <label for="mapbox/streets-v12">streets</label>
     <input id="garygibbons/cld4upb29001f01o8l2l865e7" type="radio" name="rtoggle" value="light">
@@ -35,14 +54,18 @@ body { margin: 0; padding: 0; }
     <label for="mapbox/satellite-streets-v12">sat</label>
     <input id="mapbox/outdoors-v12" type="radio" name="rtoggle" value="outdoors">
     <label for="mapbox/outdoors-v12">outdoors</label>
-</div>
-<script>
+  </div>
 
-  mapboxgl.accessToken = 'pk.eyJ1IjoiYnBhY2h1Y2EiLCJhIjoiY2lxbGNwaXdmMDAweGZxbmg5OGx2YWo5aSJ9.zda7KLJF3TH84UU6OhW16w';
+
+  <div id="about">Roughly 4km² area sizes. Subject to projection distortion.</div>
+
+  <script>
+
+    mapboxgl.accessToken = 'pk.eyJ1IjoiYnBhY2h1Y2EiLCJhIjoiY2lxbGNwaXdmMDAweGZxbmg5OGx2YWo5aSJ9.zda7KLJF3TH84UU6OhW16w';
     const map = new mapboxgl.Map({
       container: 'map',
       style: 'mapbox://styles/mapbox/streets-v12',
-      center: [121.5, 31.2],
+      center: [121.5, 31.3],
       zoom: 8
     });
 
@@ -50,50 +73,66 @@ body { margin: 0; padding: 0; }
     const inputs = layerList.getElementsByTagName('input');
 
     for (const input of inputs) {
-        input.onclick = (layer) => {
-            const layerId = layer.target.id;
-            map.setStyle('mapbox://styles/' + layerId);
-        };
+      input.onclick = (layer) => {
+        const layerId = layer.target.id;
+        map.setStyle('mapbox://styles/' + layerId);
+      };
     }
 
 
-    const bbox = [120.7, 30.5, 122.2, 32];
-    const cellSide = 1.28;
-    const options = {units: 'kilometres'};
-    const hexGrid = turf.hexGrid(bbox, cellSide, options);
-    hexGrid.features.forEach(f => {
-      f.properties = { density: Math.random() };
-    });
 
     map.on('render', function () {
 
+      map.addSource('graticule', {
+        type: 'geojson',
+        data: null
+      });
+
+
       map.addLayer({
-        'id': 'maine',
-        'type': 'fill',
-        'source': {
-          'type': 'geojson',
-          'data': hexGrid
-        },
+        id: 'graticule',
+        type: 'fill',
+        source: 'graticule',
         'layout': {},
         'paint': {
-          
+
           'fill-outline-color': '#f90',
           'fill-color': 'transparent',
           'fill-opacity': [
             "interpolate", ["linear"], ["get", "density"],
-            0, 0.6,
-            1, 0.6
+            0, 0.8,
+            1, 0.8
           ]
-        }
+        },
       });
+     
+    });
+
+    map.on('moveend', function () {
+      gridGen()
     });
 
 
+    function gridGen() {
+      var zlevel = map.getZoom();
+      if (zlevel >= 8) {
+        var bounds = map.getBounds();
+        console.log(bounds)
+        var bboxCoords = bounds.toArray();
+        console.log(bboxCoords)
+        const bboxPolygon = [Math.floor(bboxCoords[0][0]), Math.floor(bboxCoords[0][1]), Math.ceil(bboxCoords[1][0]), Math.ceil(bboxCoords[1][1])];
+        const cellSidePoly = 1.28;
+        const optionsPoly = { units: 'kilometres' };
+        const hexGrid = turf.hexGrid(bboxPolygon, cellSidePoly, optionsPoly);
+        hexGrid.features.forEach(f => {
+          f.properties = { density: Math.random() };
+        });
+        map.getSource("graticule").setData(hexGrid);
+      };
+    }
 
-
-
-
-</script>
+  </script>
 
 </body>
+
 </html>
